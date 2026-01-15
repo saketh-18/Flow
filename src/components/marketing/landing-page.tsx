@@ -122,16 +122,7 @@ function HeroSection() {
       />
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 pt-32 pb-20 text-center">
-        {/* Announcement badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mb-8"
-        >
-          <span className="text-xs text-zinc-400">Introducing Flow 2.0</span>
-          <ChevronRight className="w-3 h-3 text-zinc-500" />
-        </motion.div>
+        
 
         {/* Main headline */}
         <motion.h1
@@ -173,14 +164,6 @@ function HeroSection() {
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
-          <Button
-            variant="outline"
-            size="lg"
-            className="border-zinc-700 bg-transparent hover:bg-white/5 text-white px-6 h-12 text-base"
-          >
-            <Play className="w-4 h-4 mr-2" />
-            Watch video
-          </Button>
         </motion.div>
 
         {/* Keyboard shortcut hint */}
