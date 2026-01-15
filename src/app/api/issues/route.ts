@@ -30,7 +30,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Now fetch relations separately if we have issues
-    if (data && data.length > 0) {
+    const issueData = data as Record<string, unknown>[] | null;
+    if (issueData && issueData.length > 0) {
       // Fetch workflow states
       const { data: states } = await supabase
         .from("workflow_states")
@@ -43,11 +44,17 @@ export async function GET(request: NextRequest) {
       const { data: teams } = await supabase.from("teams").select("*");
 
       // Enrich data with relations
-      const enrichedData = data.map((issue) => ({
+      const enrichedData = issueData.map((issue) => ({
         ...issue,
-        state: states?.find((s) => s.id === issue.state_id),
-        assignee: users?.find((u) => u.id === issue.assignee_id),
-        team: teams?.find((t) => t.id === issue.team_id),
+        state: (states as Record<string, unknown>[] | null)?.find(
+          (s) => s.id === issue.state_id
+        ),
+        assignee: (users as Record<string, unknown>[] | null)?.find(
+          (u) => u.id === issue.assignee_id
+        ),
+        team: (teams as Record<string, unknown>[] | null)?.find(
+          (t) => t.id === issue.team_id
+        ),
       }));
 
       return NextResponse.json(enrichedData);

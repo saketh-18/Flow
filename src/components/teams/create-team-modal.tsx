@@ -92,14 +92,14 @@ export function CreateTeamModal({ open, onOpenChange }: CreateTeamModalProps) {
         { name: "Canceled", type: "canceled", color: "#ef4444", position: 5 },
       ];
 
-      const { error: statesError } = await supabase
-        .from("workflow_states")
-        .insert(
-          defaultStates.map((state) => ({
-            ...state,
-            team_id: (team as any).id,
-          }))
-        );
+      const { error: statesError } = await (
+        supabase.from("workflow_states") as any
+      ).insert(
+        defaultStates.map((state) => ({
+          ...state,
+          team_id: (team as any).id,
+        }))
+      );
 
       if (statesError) {
         console.error("Failed to create workflow states:", statesError);
