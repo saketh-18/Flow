@@ -12,10 +12,31 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 export default function SignupPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
+
+  // Check if user is already logged in
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const supabase = getSupabaseClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          router.push("/dashboard");
+          return;
+        }
+      } catch (err) {
+        // Not logged in, continue to show signup page
+      }
+      setIsCheckingAuth(false);
+    };
+    checkAuth();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +88,15 @@ export default function SignupPage() {
       setIsLoading(false);
     }
   };
+
+  // Show loading while checking auth
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background">
