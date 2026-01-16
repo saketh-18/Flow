@@ -4,7 +4,7 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Sparkles, X } from "lucide-react";
+import { Sparkles, X, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,7 @@ import {
 import { useUIStore, useWorkspaceStore } from "@/lib/store";
 import { useCreateIssue } from "@/hooks/use-issues";
 import { RichTextEditor } from "@/components/editor/rich-text-editor";
+import { useWorkspace } from "@/contexts/workspace-context";
 import type { IssuePriority, WorkflowState } from "@/types";
 
 const createIssueSchema = z.object({
@@ -46,13 +47,32 @@ type CreateIssueForm = {
 
 export function CreateIssueModal() {
   const { isCreateIssueOpen, closeCreateIssue } = useUIStore();
-  const { currentTeam, currentUser, teamMembers } = useWorkspaceStore();
+  
+  // Try to use workspace context, but fall back to store if not available
+  let currentTeam: any;
+  let currentUser: any;
+  let teamMembers: any[];
+  let workflowStates: WorkflowState[] = [];
+  
+  try {
+    const workspace = useWorkspace();
+    currentTeam = workspace.currentTeam;
+    currentUser = workspace.currentUser;
+    teamMembers = workspace.teamMembers;
+    workflowStates = workspace.workflowStates;
+  } catch {
+    // Not in a WorkspaceProvider, use Zustand store
+    const store = useWorkspaceStore();
+    currentTeam = store.currentTeam;
+    currentUser = store.currentUser;
+    teamMembers = store.teamMembers;
+    workflowStates = [];
+  }
+  
   const createIssue = useCreateIssue();
   const [isAISuggesting, setIsAISuggesting] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
-  const [workflowStates, setWorkflowStates] = React.useState<WorkflowState[]>(
-    []
-  );
+  const [fetchedStates, setFetchedStates] = React.useState<WorkflowState[]>([]);
 
   const {
     register,
@@ -69,56 +89,39 @@ export function CreateIssueModal() {
     },
   });
 
-  // Fetch workflow states when modal opens and team is available
+  // Set default state when workflow states are available
   React.useEffect(() => {
-    // Only fetch if modal is open and team exists
-    if (!isCreateIssueOpen || !currentTeam?.id) {
-      console.log(
-        "Modal not open or no team. isOpen:",
-        isCreateIssueOpen,
-        "teamId:",
-        currentTeam?.id
-      );
-      return;
+    const statesToUse = workflowStates && workflowStates.length > 0 ? workflowStates : fetchedStates;
+    if (
+      isCreateIssueOpen &&
+      statesToUse.length > 0 &&
+      !watch("state_id")
+    ) {
+      setValue("state_id", statesToUse[0].id);
     }
+  }, [isCreateIssueOpen, workflowStates, fetchedStates, setValue, watch]);
+
+  // Fetch workflow states if not available from context
+  React.useEffect(() => {
+    if (!isCreateIssueOpen || !currentTeam?.id) return;
+    if (workflowStates && workflowStates.length > 0) return; // Already have states from context
 
     const fetchStates = async () => {
       try {
-        const url = `/api/teams/${currentTeam.id}/workflow-states`;
-        console.log("Fetching from URL:", url);
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(
-            "Failed to fetch workflow states. Status:",
-            response.status,
-            "Error:",
-            errorText
-          );
-          return;
-        }
-
-        const states = await response.json();
-        console.log("Workflow states fetched successfully:", states);
-
-        if (Array.isArray(states) && states.length > 0) {
-          setWorkflowStates(states);
-          // Set first state as default
-          setValue("state_id", states[0].id);
-          console.log("Set default state to:", states[0].id);
-        } else {
-          console.warn("No workflow states returned from API");
-          setWorkflowStates([]);
+        const response = await fetch(
+          `/api/teams/${currentTeam.id}/workflow-states`
+        );
+        if (response.ok) {
+          const states = await response.json();
+          setFetchedStates(states);
         }
       } catch (error) {
         console.error("Error fetching workflow states:", error);
-        setWorkflowStates([]);
       }
     };
 
     fetchStates();
-  }, [isCreateIssueOpen, currentTeam?.id, setValue]);
+  }, [isCreateIssueOpen, currentTeam?.id, workflowStates]);
 
   // Reset form when modal closes
   React.useEffect(() => {
@@ -131,7 +134,6 @@ export function CreateIssueModal() {
         project_id: undefined,
         state_id: "",
       });
-      setWorkflowStates([]);
     }
   }, [isCreateIssueOpen, reset]);
 
@@ -217,22 +219,45 @@ export function CreateIssueModal() {
   return (
     <Dialog open={isCreateIssueOpen} onOpenChange={closeCreateIssue}>
       <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            Create Issue
-            {currentTeam && (
-              <span className="text-sm font-normal text-muted-foreground">
-                in {currentTeam.name}
-              </span>
-            )}
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            Create a new issue with title, description, status, priority, and
-            assignee.
-          </DialogDescription>
-        </DialogHeader>
+        {!currentTeam || !currentUser ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>Create Issue</DialogTitle>
+              <DialogDescription>
+                Unable to create issue at this time
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-sm text-muted-foreground">
+                {!currentTeam
+                  ? "No team selected. Please select a team first."
+                  : "No user information available. Please log in again."}
+              </p>
+            </div>
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button type="button" variant="ghost" onClick={closeCreateIssue}>
+                Close
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                Create Issue
+                {currentTeam && (
+                  <span className="text-sm font-normal text-muted-foreground">
+                    in {currentTeam.name}
+                  </span>
+                )}
+              </DialogTitle>
+              <DialogDescription className="sr-only">
+                Create a new issue with title, description, status, priority, and
+                assignee.
+              </DialogDescription>
+            </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Title */}
           <div>
             <Input
@@ -271,12 +296,12 @@ export function CreateIssueModal() {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                {workflowStates.length === 0 && (
+                {workflowStates?.length === 0 && fetchedStates.length === 0 && (
                   <div className="p-2 text-sm text-gray-500">
                     No states available
                   </div>
                 )}
-                {workflowStates.map((state) => (
+                {(workflowStates && workflowStates.length > 0 ? workflowStates : fetchedStates).map((state) => (
                   <SelectItem key={state.id} value={state.id}>
                     {state.name}
                   </SelectItem>
@@ -356,7 +381,9 @@ export function CreateIssueModal() {
               {isSubmitting ? "Creating..." : "Create Issue"}
             </Button>
           </div>
-        </form>
+            </form>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
