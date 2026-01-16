@@ -33,6 +33,8 @@ export default function SettingsPage() {
   const { currentUser, currentWorkspace } = useWorkspaceStore();
   const [activeSection, setActiveSection] = React.useState("profile");
   const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState<string | null>(null);
 
   // Profile form state
   const [displayName, setDisplayName] = React.useState(
@@ -42,12 +44,14 @@ export default function SettingsPage() {
 
   const handleSignOut = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const supabase = getSupabaseClient();
       await supabase.auth.signOut();
       router.push("/login");
-    } catch (error) {
-      console.error("Error signing out:", error);
+    } catch (err) {
+      console.error("Error signing out:", err);
+      setError("Failed to sign out. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -56,16 +60,20 @@ export default function SettingsPage() {
   const handleUpdateProfile = async () => {
     if (!currentUser) return;
     setIsLoading(true);
+    setError(null);
+    setSuccess(null);
 
     try {
       const supabase = getSupabaseClient();
-      const { error } = (await (supabase.from("users") as any)
+      const { error: updateError } = (await (supabase.from("users") as any)
         .update({ display_name: displayName })
         .eq("id", currentUser.id)) as any;
 
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error updating profile:", error);
+      if (updateError) throw updateError;
+      setSuccess("Profile updated successfully!");
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setError("Failed to update profile. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -150,6 +158,18 @@ export default function SettingsPage() {
                       Email cannot be changed
                     </p>
                   </div>
+
+                  {error && (
+                    <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm">
+                      {error}
+                    </div>
+                  )}
+
+                  {success && (
+                    <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 text-sm">
+                      {success}
+                    </div>
+                  )}
 
                   <Button onClick={handleUpdateProfile} disabled={isLoading}>
                     {isLoading && (

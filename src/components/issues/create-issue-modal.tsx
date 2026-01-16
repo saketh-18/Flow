@@ -49,6 +49,7 @@ export function CreateIssueModal() {
   const { currentTeam, currentUser, teamMembers } = useWorkspaceStore();
   const createIssue = useCreateIssue();
   const [isAISuggesting, setIsAISuggesting] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
   const [workflowStates, setWorkflowStates] = React.useState<WorkflowState[]>(
     []
   );
@@ -139,9 +140,11 @@ export function CreateIssueModal() {
 
   const onSubmit = async (data: CreateIssueForm) => {
     if (!currentTeam || !currentUser) {
-      console.error("No team or user selected");
+      setSubmitError("No team or user selected. Please try again.");
       return;
     }
+
+    setSubmitError(null);
 
     try {
       console.log("Creating issue with data:", {
@@ -172,9 +175,11 @@ export function CreateIssueModal() {
       closeCreateIssue();
     } catch (error) {
       const errorMsg =
-        error instanceof Error ? error.message : JSON.stringify(error);
+        error instanceof Error
+          ? error.message
+          : "Failed to create issue. Please try again.";
       console.error("Failed to create issue:", errorMsg);
-      alert(`Error creating issue: ${errorMsg}`);
+      setSubmitError(errorMsg);
     }
   };
 
@@ -334,6 +339,13 @@ export function CreateIssueModal() {
               {isAISuggesting ? "Suggesting..." : "AI Suggest"}
             </Button>
           </div>
+
+          {/* Error message */}
+          {submitError && (
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm">
+              {submitError}
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-4 border-t">

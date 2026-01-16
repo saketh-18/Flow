@@ -32,6 +32,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   // Form state
   const [workspaceName, setWorkspaceName] = React.useState("");
@@ -64,6 +65,7 @@ export default function OnboardingPage() {
   const handleCreateWorkspace = async () => {
     if (!workspaceName || !workspaceSlug) return;
     setIsLoading(true);
+    setError(null);
 
     try {
       const supabase = getSupabaseClient();
@@ -73,6 +75,21 @@ export default function OnboardingPage() {
 
       if (!user) {
         router.push("/login");
+        return;
+      }
+
+      // Check if workspace slug already exists
+      const { data: existingWorkspace } = await supabase
+        .from("workspaces")
+        .select("id")
+        .eq("slug", workspaceSlug)
+        .single();
+
+      if (existingWorkspace) {
+        setError(
+          "A workspace with this URL already exists. Please choose a different name."
+        );
+        setIsLoading(false);
         return;
       }
 
@@ -86,7 +103,19 @@ export default function OnboardingPage() {
         .select()
         .single()) as any;
 
-      if (workspaceError) throw workspaceError;
+      if (workspaceError) {
+        if (workspaceError.code === "23505") {
+          setError(
+            "A workspace with this URL already exists. Please choose a different name."
+          );
+        } else {
+          setError(
+            workspaceError.message ||
+              "Failed to create workspace. Please try again."
+          );
+        }
+        throw workspaceError;
+      }
 
       // Add user as workspace owner
       const { error: memberError } = await supabase
@@ -97,7 +126,10 @@ export default function OnboardingPage() {
           role: "owner",
         } as any);
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        setError("Failed to add you to the workspace. Please try again.");
+        throw memberError;
+      }
 
       setWorkspaceId(workspace?.id);
       setCurrentStep(1);
@@ -111,6 +143,7 @@ export default function OnboardingPage() {
   const handleCreateTeam = async () => {
     if (!workspaceId || !teamName || !teamKey) return;
     setIsLoading(true);
+    setError(null);
 
     try {
       const supabase = getSupabaseClient();
@@ -120,6 +153,22 @@ export default function OnboardingPage() {
 
       if (!user) {
         router.push("/login");
+        return;
+      }
+
+      // Check if team key already exists in this workspace
+      const { data: existingTeam } = await supabase
+        .from("teams")
+        .select("id")
+        .eq("workspace_id", workspaceId)
+        .eq("key", teamKey.toUpperCase())
+        .single();
+
+      if (existingTeam) {
+        setError(
+          "A team with this identifier already exists. Please choose a different key."
+        );
+        setIsLoading(false);
         return;
       }
 
@@ -134,7 +183,18 @@ export default function OnboardingPage() {
         .select()
         .single()) as any;
 
-      if (teamError) throw teamError;
+      if (teamError) {
+        if (teamError.code === "23505") {
+          setError(
+            "A team with this identifier already exists. Please choose a different key."
+          );
+        } else {
+          setError(
+            teamError.message || "Failed to create team. Please try again."
+          );
+        }
+        throw teamError;
+      }
 
       // Add user as team member
       await supabase.from("team_members").insert({
@@ -244,6 +304,13 @@ export default function OnboardingPage() {
             {steps[currentStep].description}
           </p>
         </div>
+
+        {/* Error message */}
+        {error && (
+          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm">
+            {error}
+          </div>
+        )}
 
         {/* Step Content */}
         {currentStep === 0 && (
