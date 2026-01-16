@@ -58,3 +58,12 @@ export { ScrollArea, ScrollBar } from "./scroll-area";
 export { Separator } from "./separator";
 export { Label } from "./label";
 export { Textarea } from "./textarea";
+export { Skeleton } from "./skeleton";
+export {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "./card";
