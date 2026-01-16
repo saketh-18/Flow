@@ -9,12 +9,14 @@ import {
   Hash,
   Inbox,
   LayoutGrid,
+  MessageSquare,
   Plus,
   Search,
   Settings,
   Sparkles,
   Timer,
   User,
+  Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -33,7 +35,13 @@ interface CommandItem {
 
 export function CommandPalette() {
   const router = useRouter();
-  const { commandPalette, closeCommandPalette, openCreateIssue } = useUIStore();
+  const {
+    commandPalette,
+    closeCommandPalette,
+    openCreateIssue,
+    openAIChat,
+    openAICommand,
+  } = useUIStore();
   const [search, setSearch] = React.useState("");
 
   // Define command items
@@ -54,13 +62,24 @@ export function CommandPalette() {
       {
         id: "ai-assist",
         title: "Ask AI assistant",
-        icon: Sparkles,
+        icon: MessageSquare,
         shortcut: "⌘ /",
         action: () => {
           closeCommandPalette();
-          // Will open AI chat
+          openAIChat();
         },
-        group: "Actions",
+        group: "AI",
+      },
+      {
+        id: "ai-command",
+        title: "AI Command (Natural Language)",
+        icon: Sparkles,
+        shortcut: "⌘ J",
+        action: () => {
+          closeCommandPalette();
+          openAICommand();
+        },
+        group: "AI",
       },
 
       // Navigation

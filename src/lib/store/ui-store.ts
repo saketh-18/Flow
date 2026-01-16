@@ -53,6 +53,14 @@ interface UIStore {
   isCreateIssueOpen: boolean;
   openCreateIssue: () => void;
   closeCreateIssue: () => void;
+
+  // AI panel
+  isAIChatOpen: boolean;
+  isAICommandOpen: boolean;
+  openAIChat: () => void;
+  closeAIChat: () => void;
+  openAICommand: () => void;
+  closeAICommand: () => void;
 }
 
 export const useUIStore = create<UIStore>()(
@@ -156,6 +164,14 @@ export const useUIStore = create<UIStore>()(
       isCreateIssueOpen: false,
       openCreateIssue: () => set({ isCreateIssueOpen: true }),
       closeCreateIssue: () => set({ isCreateIssueOpen: false }),
+
+      // AI panels
+      isAIChatOpen: false,
+      isAICommandOpen: false,
+      openAIChat: () => set({ isAIChatOpen: true }),
+      closeAIChat: () => set({ isAIChatOpen: false }),
+      openAICommand: () => set({ isAICommandOpen: true }),
+      closeAICommand: () => set({ isAICommandOpen: false }),
     }),
     {
       name: "flow-ui-storage",

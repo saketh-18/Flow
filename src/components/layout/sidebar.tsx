@@ -19,6 +19,7 @@ import {
   RefreshCw,
   Eye,
   Home,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -60,8 +61,13 @@ const workspaceNavItems: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { sidebar, toggleSidebar, openCommandPalette, openCreateIssue } =
-    useUIStore();
+  const {
+    sidebar,
+    toggleSidebar,
+    openCommandPalette,
+    openCreateIssue,
+    openAIChat,
+  } = useUIStore();
   const { currentWorkspace, teams } = useWorkspaceStore();
   const [expandedTeams, setExpandedTeams] = React.useState<string[]>([]);
   const [isCreateTeamOpen, setIsCreateTeamOpen] = React.useState(false);
@@ -133,6 +139,19 @@ export function Sidebar() {
               </TooltipTrigger>
               <TooltipContent side="right">Create Issue</TooltipContent>
             </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={openAIChat}
+                  className="text-violet-500 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-950"
+                >
+                  <Sparkles className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">AI Assistant</TooltipContent>
+            </Tooltip>
             <Separator className="my-2" />
             {mainNavItems.map((item) => (
               <Tooltip key={item.href}>
@@ -193,13 +212,26 @@ export function Sidebar() {
           {/* Create Issue */}
           <Button
             variant="ghost"
-            className="w-full justify-start gap-2 text-muted-foreground mb-2"
+            className="w-full justify-start gap-2 text-muted-foreground mb-1"
             onClick={openCreateIssue}
           >
             <Plus className="h-4 w-4" />
             <span className="text-sm">New Issue</span>
             <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
               C
+            </kbd>
+          </Button>
+
+          {/* AI Assistant */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2 text-violet-600 hover:text-violet-700 hover:bg-violet-50 dark:text-violet-400 dark:hover:bg-violet-950 mb-2"
+            onClick={openAIChat}
+          >
+            <Sparkles className="h-4 w-4" />
+            <span className="text-sm">AI Assistant</span>
+            <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+              ⌘/
             </kbd>
           </Button>
 

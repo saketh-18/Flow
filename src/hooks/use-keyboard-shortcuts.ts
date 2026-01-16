@@ -21,8 +21,14 @@ export function useKeyboardShortcuts(customShortcuts?: KeyboardShortcut[]) {
     closeCommandPalette,
     openCreateIssue,
     closeCreateIssue,
+    openAIChat,
+    closeAIChat,
+    openAICommand,
+    closeAICommand,
     commandPalette,
     isCreateIssueOpen,
+    isAIChatOpen,
+    isAICommandOpen,
   } = useUIStore();
 
   // Track key sequence for multi-key shortcuts (e.g., "G I")
@@ -62,9 +68,45 @@ export function useKeyboardShortcuts(customShortcuts?: KeyboardShortcut[]) {
           closeCommandPalette();
         } else if (isCreateIssueOpen) {
           closeCreateIssue();
+        } else if (isAIChatOpen) {
+          closeAIChat();
+        } else if (isAICommandOpen) {
+          closeAICommand();
         }
       },
       description: "Close modal/panel",
+      scope: "global",
+    },
+
+    // AI Chat (Cmd/Ctrl + /)
+    {
+      key: "/",
+      meta: true,
+      action: () => openAIChat(),
+      description: "Open AI chat",
+      scope: "global",
+    },
+    {
+      key: "/",
+      ctrl: true,
+      action: () => openAIChat(),
+      description: "Open AI chat",
+      scope: "global",
+    },
+
+    // AI Command (Cmd/Ctrl + J)
+    {
+      key: "j",
+      meta: true,
+      action: () => openAICommand(),
+      description: "Open AI command bar",
+      scope: "global",
+    },
+    {
+      key: "j",
+      ctrl: true,
+      action: () => openAICommand(),
+      description: "Open AI command bar",
       scope: "global",
     },
 
@@ -179,7 +221,13 @@ export function useKeyboardShortcuts(customShortcuts?: KeyboardShortcut[]) {
         }
       }
     },
-    [shortcuts, commandPalette.isOpen, isCreateIssueOpen]
+    [
+      shortcuts,
+      commandPalette.isOpen,
+      isCreateIssueOpen,
+      isAIChatOpen,
+      isAICommandOpen,
+    ]
   );
 
   useEffect(() => {

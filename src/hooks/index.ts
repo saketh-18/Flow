@@ -9,3 +9,4 @@ export {
   issueKeys,
 } from "./use-issues";
 export { useRealtime, usePresence } from "./use-realtime";
+export { useAIChat, useAISuggestions, useAICommand } from "./use-ai";

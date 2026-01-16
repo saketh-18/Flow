@@ -13,6 +13,7 @@ import {
   Layers,
   Timer,
   ChevronRight,
+  Sparkles,
   Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -122,8 +123,6 @@ function HeroSection() {
       />
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 pt-32 pb-20 text-center">
-        
-
         {/* Main headline */}
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
@@ -145,7 +144,7 @@ function HeroSection() {
         >
           Meet the new standard for modern software development.
           <br className="hidden md:block" />
-          Streamline issues, sprints, and product roadmaps.
+          Streamline issues, sprints, and roadmaps with AI assistance.
         </motion.p>
 
         {/* CTA buttons */}
@@ -373,6 +372,12 @@ function FeaturesSection() {
       title: "Flexible workflows",
       description:
         "Customize issue states, labels, and priorities to match how your team works.",
+    },
+    {
+      icon: Sparkles,
+      title: "AI-powered assistance",
+      description:
+        "Let AI help you write better issues, suggest priorities, and break down complex tasks.",
     },
   ];
 
