@@ -14,7 +14,6 @@ import {
   Search,
   Settings,
   Sparkles,
-  Timer,
   User,
   Zap,
 } from "lucide-react";
@@ -113,14 +112,6 @@ export function CommandPalette() {
         icon: LayoutGrid,
         shortcut: "G B",
         href: "/flow/team/ENG/board",
-        group: "Navigation",
-      },
-      {
-        id: "nav-cycles",
-        title: "Go to Cycles",
-        icon: Timer,
-        shortcut: "G C",
-        href: "/flow/team/ENG/cycles",
         group: "Navigation",
       },
       {

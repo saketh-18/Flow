@@ -16,8 +16,6 @@ import {
   FolderKanban,
   Tags,
   Keyboard,
-  RefreshCw,
-  Eye,
   Home,
   Sparkles,
 } from "lucide-react";
@@ -55,7 +53,6 @@ const mainNavItems: NavItem[] = [
 // Simplified workspace navigation - focused on essential features
 const workspaceNavItems: NavItem[] = [
   { title: "Projects", href: "/projects", icon: FolderKanban, shortcut: "G P" },
-  { title: "Views", href: "/views", icon: Eye },
   { title: "Labels", href: "/labels", icon: Tags },
 ];
 
@@ -332,16 +329,6 @@ export function Sidebar() {
                         >
                           <LayoutGrid className="h-3 w-3" />
                           Board
-                        </Button>
-                      </Link>
-                      <Link href={`${basePath}/team/${team.key}/cycles`}>
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start gap-2 h-7 text-xs"
-                          size="sm"
-                        >
-                          <RefreshCw className="h-3 w-3" />
-                          Cycles
                         </Button>
                       </Link>
                     </div>

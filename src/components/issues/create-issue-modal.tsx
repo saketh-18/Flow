@@ -47,13 +47,13 @@ type CreateIssueForm = {
 
 export function CreateIssueModal() {
   const { isCreateIssueOpen, closeCreateIssue } = useUIStore();
-  
+
   // Try to use workspace context, but fall back to store if not available
   let currentTeam: any;
   let currentUser: any;
   let teamMembers: any[];
   let workflowStates: WorkflowState[] = [];
-  
+
   try {
     const workspace = useWorkspace();
     currentTeam = workspace.currentTeam;
@@ -68,7 +68,7 @@ export function CreateIssueModal() {
     teamMembers = store.teamMembers;
     workflowStates = [];
   }
-  
+
   const createIssue = useCreateIssue();
   const [isAISuggesting, setIsAISuggesting] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
@@ -91,12 +91,11 @@ export function CreateIssueModal() {
 
   // Set default state when workflow states are available
   React.useEffect(() => {
-    const statesToUse = workflowStates && workflowStates.length > 0 ? workflowStates : fetchedStates;
-    if (
-      isCreateIssueOpen &&
-      statesToUse.length > 0 &&
-      !watch("state_id")
-    ) {
+    const statesToUse =
+      workflowStates && workflowStates.length > 0
+        ? workflowStates
+        : fetchedStates;
+    if (isCreateIssueOpen && statesToUse.length > 0 && !watch("state_id")) {
       setValue("state_id", statesToUse[0].id);
     }
   }, [isCreateIssueOpen, workflowStates, fetchedStates, setValue, watch]);
@@ -252,135 +251,143 @@ export function CreateIssueModal() {
                 )}
               </DialogTitle>
               <DialogDescription className="sr-only">
-                Create a new issue with title, description, status, priority, and
-                assignee.
+                Create a new issue with title, description, status, priority,
+                and assignee.
               </DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Title */}
-          <div>
-            <Input
-              {...register("title")}
-              placeholder="Issue title"
-              className="text-lg font-medium border-0 px-0 focus-visible:ring-0 focus:outline-0"
-              autoFocus
-            />
-            {errors.title && (
-              <p className="text-sm text-red-500 mt-1">
-                {errors.title.message}
-              </p>
-            )}
-          </div>
-
-          {/* Description */}
-          <div className="min-h-[150px] border rounded-md">
-            <RichTextEditor
-              content={description}
-              onChange={(content) => setValue("description", content)}
-              placeholder="Add description..."
-            />
-          </div>
-
-          {/* Properties */}
-          <div className="flex flex-wrap gap-2">
-            {/* Status */}
-            <Select
-              value={watch("state_id") || ""}
-              onValueChange={(value) => {
-                console.log("Status changed to:", value);
-                setValue("state_id", value);
-              }}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                {workflowStates?.length === 0 && fetchedStates.length === 0 && (
-                  <div className="p-2 text-sm text-gray-500">
-                    No states available
-                  </div>
+              {/* Title */}
+              <div>
+                <Input
+                  {...register("title")}
+                  placeholder="Issue title"
+                  className="text-lg font-medium border-0 px-0 focus-visible:ring-0 focus:outline-0"
+                  autoFocus
+                />
+                {errors.title && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.title.message}
+                  </p>
                 )}
-                {(workflowStates && workflowStates.length > 0 ? workflowStates : fetchedStates).map((state) => (
-                  <SelectItem key={state.id} value={state.id}>
-                    {state.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              </div>
 
-            {/* Priority */}
-            <Select
-              value={watch("priority")}
-              onValueChange={(value) =>
-                setValue("priority", value as IssuePriority)
-              }
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Priority" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="urgent">🔴 Urgent</SelectItem>
-                <SelectItem value="high">🟠 High</SelectItem>
-                <SelectItem value="medium">🟡 Medium</SelectItem>
-                <SelectItem value="low">🔵 Low</SelectItem>
-                <SelectItem value="none">⚪ No priority</SelectItem>
-              </SelectContent>
-            </Select>
+              {/* Description */}
+              <div className="min-h-[150px] border rounded-md">
+                <RichTextEditor
+                  content={description}
+                  onChange={(content) => setValue("description", content)}
+                  placeholder="Add description..."
+                />
+              </div>
 
-            {/* Assignee */}
-            <Select
-              value={watch("assignee_id") || "unassigned"}
-              onValueChange={(value) =>
-                setValue(
-                  "assignee_id",
-                  value === "unassigned" ? undefined : value
-                )
-              }
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Assignee" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
-                {teamMembers.map((member) => (
-                  <SelectItem key={member.id} value={member.id}>
-                    {member.display_name || member.email}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              {/* Properties */}
+              <div className="flex flex-wrap gap-2">
+                {/* Status */}
+                <Select
+                  value={watch("state_id") || ""}
+                  onValueChange={(value) => {
+                    console.log("Status changed to:", value);
+                    setValue("state_id", value);
+                  }}
+                >
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {workflowStates?.length === 0 &&
+                      fetchedStates.length === 0 && (
+                        <div className="p-2 text-sm text-gray-500">
+                          No states available
+                        </div>
+                      )}
+                    {(workflowStates && workflowStates.length > 0
+                      ? workflowStates
+                      : fetchedStates
+                    ).map((state) => (
+                      <SelectItem key={state.id} value={state.id}>
+                        {state.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-            {/* AI Suggest Button */}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleAISuggest}
-              disabled={!title || isAISuggesting}
-              className="ml-auto"
-            >
-              <Sparkles className="h-4 w-4 mr-1" />
-              {isAISuggesting ? "Suggesting..." : "AI Suggest"}
-            </Button>
-          </div>
+                {/* Priority */}
+                <Select
+                  value={watch("priority")}
+                  onValueChange={(value) =>
+                    setValue("priority", value as IssuePriority)
+                  }
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="urgent">🔴 Urgent</SelectItem>
+                    <SelectItem value="high">🟠 High</SelectItem>
+                    <SelectItem value="medium">🟡 Medium</SelectItem>
+                    <SelectItem value="low">🔵 Low</SelectItem>
+                    <SelectItem value="none">⚪ No priority</SelectItem>
+                  </SelectContent>
+                </Select>
 
-          {/* Error message */}
-          {submitError && (
-            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm">
-              {submitError}
-            </div>
-          )}
+                {/* Assignee */}
+                <Select
+                  value={watch("assignee_id") || "unassigned"}
+                  onValueChange={(value) =>
+                    setValue(
+                      "assignee_id",
+                      value === "unassigned" ? undefined : value
+                    )
+                  }
+                >
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Assignee" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {teamMembers.map((member) => (
+                      <SelectItem key={member.id} value={member.id}>
+                        {member.display_name || member.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button type="button" variant="ghost" onClick={closeCreateIssue}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create Issue"}
-            </Button>
-          </div>
+                {/* AI Suggest Button */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAISuggest}
+                  disabled={!title || isAISuggesting}
+                  className="ml-auto"
+                >
+                  <Sparkles className="h-4 w-4 mr-1" />
+                  {isAISuggesting ? "Suggesting..." : "AI Suggest"}
+                </Button>
+              </div>
+
+              {/* Error message */}
+              {submitError && (
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm">
+                  {submitError}
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={closeCreateIssue}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Creating..." : "Create Issue"}
+                </Button>
+              </div>
             </form>
           </>
         )}
